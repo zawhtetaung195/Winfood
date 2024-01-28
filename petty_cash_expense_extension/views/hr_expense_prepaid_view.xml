@@ -1,0 +1,320 @@
+<?xml version="1.0"?>
+<odoo>
+	<data>
+		<!-- Action -->
+		<record id="view_expense_prepaid_form" model="ir.ui.view">
+			<field name="name">hr.expense.prepaid</field>
+			<field name="model">expense.prepaid</field>
+			<field eval="25" name="priority" />
+			<field name="arch" type="xml">
+				<form string="Expense Sheet">
+					<header>
+						<field name="can_reset" invisible="1"/>
+						<field name="can_approve" invisible="1" />
+						<field name="is_approve" invisible="1"/>
+						<field name="is_approve_finance" invisible="1"/>
+
+						<button name="prepaid_expense_draft" attrs="{'invisible': [('state', 'in', ['draft','confirm'])]}" string="Set to Draft" type="object" />
+
+						<button name="prepaid_expense_confirm" string="Confirm" type="object" class="oe_highlight" states="draft" />
+
+						<button name="prepaid_expense_manager_accept" string="Manager Approved" type="object" class="oe_highlight" attrs="{'invisible': [('is_approve', '=', False)]}" groups="petty_cash_expense_extension.group_petty_manager,petty_cash_expense_extension.group_petty_admin" states="confirm" />
+
+						<button name="approve" states="manager_approve" string="Finance Approve" type="object" attrs="{'invisible': [('is_approve_finance', '=', False)]}" groups="petty_cash_expense_extension.group_petty_finance,petty_cash_expense_extension.group_petty_admin" class="oe_highlight"/>
+						 
+
+						<button name="gm_approve" states="approve" string="GM Approve" groups="petty_cash_expense_extension.group_petty_finance,petty_cash_expense_extension.group_petty_gm,petty_cash_expense_extension.group_petty_admin" type="object"  class="oe_highlight"/>
+
+						<button name="prepaid_expense_paid" states="gm_approve" string="Paid" type="object" groups="petty_cash_expense_extension.group_petty_cashier,petty_cash_expense_extension.group_petty_admin" class="oe_highlight"/>
+						
+						<button name="prepaid_expense_cashier_closed" states="paid" string="Close" type="object" class="oe_highlight"/>
+
+						<button name="cancel" states="manager_approve,approve,paid" string="Cancel" type="object" class="oe_highlight"/>
+
+						<button name="print_adv_req" string="Print" type="object" class="oe_highlight" />
+
+						<field name="state" widget="statusbar" statusbar_visible="draft,confirm,manager_approve,approve,gm_approve,paid,closed"
+						 statusbar_colors='{"confirm":"blue","manager_approve":"blue","approve":"blue","gm_approve":"blue","paid":"blue","closed":"red","refuse":"red"}' />
+					</header>
+					<sheet>
+						<div class="oe_title">
+							<h1>
+								<field name="voucher_no" attrs="{'invisible': [('state', '=','draft')],'readonly': [('state', '!=', 'draft')]}" nolabel="1"/>
+							</h1>
+							
+							<h1>
+								<field name="name_reference" placeholder="e.g Mr.Aung,Business Trip"
+							nolabel="1" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+							</h1>
+						</div>
+						<br />
+						
+
+						<group>
+							<group name="left_group">
+								<field name="employee_name" attrs="{'readonly': [('state', 'not in', ('draft','confirm'))]}"/>
+								<field name="department_id" attrs="{'readonly': [('state', 'not in', ('draft','confirm'))]}" />
+								<field name="approved_by_id" attrs="{'readonly': [('state', 'not in', ('draft','confirm'))]}"/>
+								<field name="finance_approved_id" attrs="{'readonly': [('state', 'not in', ('draft','confirm'))]}"/>
+								<!-- <field name="account_ids"  attrs="{'invisible':[('state','=','draft')]}" groups="petty_cash_expense_extension.group_petty_manager,petty_cash_expense_extension.group_petty_finance,petty_cash_expense_extension.group_petty_cashier,petty_cash_expense_extension.group_petty_admin"/> -->
+								<field name="account_code" readonly="1" attrs="{'invisible':[('state','=','draft')]}" groups="petty_cash_expense_extension.group_petty_manager,petty_cash_expense_extension.group_petty_finance,petty_cash_expense_extension.group_petty_cashier,petty_cash_expense_extension.group_petty_admin"/>	
+								<!-- 20190524 by yma							 -->
+								<field name="analytic_id" attrs="{'readonly': [('state', '!=', 'draft')]}" invisible='1' />							
+							</group>
+							<group name="right_group">
+								<!-- Update By TPS 21-6-2019 -->
+								<field name="company_id" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+								<field name="invoice_date" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+								<field name="state_type" attrs="{'invisible':[('state','=','draft')]}" groups="petty_cash_expense_extension.group_petty_manager,petty_cash_expense_extension.group_petty_finance,petty_cash_expense_extension.group_petty_cashier,petty_cash_expense_extension.group_petty_admin" />
+								<field name="cash_account" attrs="{'invisible':[('state','=','draft')]}" groups="petty_cash_expense_extension.group_petty_manager,petty_cash_expense_extension.group_petty_finance,petty_cash_expense_extension.group_petty_cashier,petty_cash_expense_extension.group_petty_admin" />
+								<field name="currency_id" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+								<field name="advance_amount" string ="Amount" attrs="{'readonly':[('state','!=','draft')]}"/>
+							</group>
+						</group>
+						<notebook attrs="{'invisible': [('state', 'not in', ['paid','closed'])]}">
+							<page name="journal_items" string="Advance Journal" attrs="{'invisible': [('state', 'not in', ['paid','closed'])]}" >
+								<field name="move_line_ids" nolabel="1" readonly="1">
+									<tree>
+										<field name="account_id" />
+										<field name="name" />
+										<field name="amount_currency" invisible="1"/>
+										<field name="currency_id" invisible="1"/>
+										<field name="debit" />
+										<field name="credit" />
+										<field name="tag_ids" invisible="1"/>
+									</tree>
+								</field>
+							</page>
+							<page name="expense_items" string="Expense Journal" attrs="{'invisible': [('state', '!=', 'closed')]}" >
+								<field name="exp_move_line_ids" nolabel="1" readonly="1">
+									<tree>
+										<field name="account_id" />
+										<field name="name" />
+										<field name="amount_currency" invisible="1"/>
+										<field name="currency_id" invisible="1"/>
+										<field name="debit" />
+										<field name="credit" />
+										<field name="tag_ids" invisible="1"/>
+									</tree>
+								</field>
+							</page>
+							<page name="adjustment_items" string="Adjustment Journal" attrs="{'invisible': [('state', '!=', 'closed')]}" >
+								<field name="adj_move_line_ids" nolabel="1" readonly="1">
+									<tree>
+										<field name="account_id" />
+										<field name="name" />
+										<field name="amount_currency" invisible="1"/>
+										<field name="currency_id" invisible="1"/>
+										<field name="debit" />
+										<field name="credit" />
+										<field name="tag_ids" invisible="1"/>
+									</tree>
+								</field>
+							</page>
+						</notebook>
+
+						<label for="note" />
+						<br />
+						<field name="note" nolabel="1" placeholder="Advance note" />
+						
+
+					</sheet>
+					<div class="oe_chatter">
+						<field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+						<field name="activity_ids" widget="mail_activity"/>
+						<field name="message_ids" widget="mail_thread"/>
+					</div>
+				</form>
+			</field>
+		</record>
+
+		<record id="view_expenses_prepaid_tree" model="ir.ui.view">
+			<field name="name">Expense Prepaid</field>
+			<field name="model">expense.prepaid</field>
+			<field eval="25" name="priority" />
+			<field name="arch" type="xml">
+				<tree string="Expense Prepaid" >
+					<field name="voucher_no" />
+					<field name="name_reference" />
+					<field name="employee_name" />
+					<field name="advance_amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+					<field name="expense_total" invisible="1"/>
+					<field name="invoice_date"/>
+					<field name="state" />
+				</tree>
+			</field>
+		</record>
+
+		<record id="action_hr_expense_prepaid_record" model="ir.actions.act_window">
+			<field name="name">Advance Request</field>
+			<field name="res_model">expense.prepaid</field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="view_mode">tree,form</field>
+			<field name="view_id" ref="view_expenses_prepaid_tree" />
+		</record>
+
+		<record id="view_hr_expense_account_form" model="ir.ui.view">
+			<field name="name">HR Expense Account Form</field>
+			<field name="model">expense.prepaid.account</field>
+			<field name="arch" type="xml">
+				<form string="HR Expense Account">
+					<sheet>						
+						<group>
+							<field name="account_code" />
+							<field name="account_name" />
+						</group>						
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+
+		<record id="view_hr_expense_account_tree" model="ir.ui.view">
+			<field name="name">HR Expense Account Tree</field>
+			<field name="model">expense.prepaid.account</field>
+			<field name="arch" type="xml">
+				<tree string="HR Expense Account">
+					<field name="account_code" />
+					<field name="account_name" />		 			
+				</tree>
+			</field>
+		</record>
+		<record id="view_hr_prepaid_expense_filter" model="ir.ui.view">
+			<field name="name">expense.prepaid.filter</field>
+			<field name="model">expense.prepaid</field>
+			<field name="arch" type="xml">
+				<search string="Advance Request">
+					<filter icon="terp-camera_test" domain="[('state','=','draft')]" string="Draft" name="prepaid_expense_draft"/>
+					<filter icon="terp-camera_test" domain="[('state','=','confirm')]" string="Confirm" name="prepaid_expense_confirm"/>
+					<filter icon="terp-camera_test" domain="[('state','=','manager_approve')]" string="Manager Approved" name="prepaid_expense_manager_accept"/>
+					<filter icon="terp-camera_test" domain="[('state','=','approve')]" string="Finance Approved" name="approve"/>
+					<filter icon="terp-camera_test" domain="[('state','=','paid')]" string="Paid" name="prepaid_expense_paid"/>
+					<filter icon="terp-camera_test" domain="[('state','=','closed')]" string="Close" name="expense_close"/>
+					<filter icon="terp-camera_test" domain="[('state','=','cancelled')]" string="Cancel" name="expense_canceled"/>
+					<filter icon="terp-camera_test" name="to_approve" domain="[('state','in',['confirm','manager_approve','approve'])]" string="To Approve" help="Confirmed Expenses"/>
+					<field name="name_reference" />
+					<field name="employee_name" />
+					<field name="voucher_no" string="Voucher No"/>
+					<!-- <field name="main_category" />
+					<field name="sub_category" />
+					<field name="team_id" /> -->
+					<field name="note" />
+					<field name="invoice_date" />					
+				</search>
+			</field>
+		</record>
+
+		<record id="action_hr_expense_account_view" model="ir.actions.act_window">
+			<field name="name">HR Expense Account</field>
+			<field name="res_model">expense.prepaid.account</field>
+			<field name="type">ir.actions.act_window</field>
+			<!-- <field name="view_type">form</field> -->
+			<field name="view_mode">tree,form</field>
+			<field name="search_view_id" ref="view_hr_prepaid_expense_filter"/>
+			<field name="view_id" ref="view_hr_expense_account_tree" />
+		</record>
+		
+
+		
+		<record id="view_hr_general_expense_filter" model="ir.ui.view">
+			<field name="name">hr.expense.filter</field>
+			<field name="model">hr.expense</field>
+			<field name="arch" type="xml">
+				<search string="Advance Clearing">
+					<field name="name" string="Voucher No"/>
+					<field name="description" />
+					<field name="date"/>
+					<field name="employee_id" />
+				   <!--  <field name="main_category" />
+					<field name="sub_category" /> -->
+					<field name="note" />
+					<filter icon="terp-document-new" name="general_expense_draft" domain="[('state','=','draft')]" string="Draft" help="New Expense"/>
+					<filter icon="terp-camera_test" domain="[('state','=','confirm')]" string="Confirm" name="general_expense_confirm"/>
+					<filter icon="terp-camera_test" domain="[('state','=','manager_approve')]" string="Manager Approved" name="general_expense_manager_accept"/>
+					<filter icon="terp-camera_test" domain="[('state','=','approved')]" string="Finance Approved" name="approve"/>
+					<filter icon="terp-camera_test" domain="[('state','=','paid')]" string="Paid" name="general_expense_paid"/>
+					<filter icon="terp-camera_test" domain="[('state','=','cancel')]" string="Cancel" name="cancel"/>
+					<filter icon="terp-camera_test" name="to_approve" domain="[('state','in',['confirm','manager_approve','approved'])]" string="To Approve" help="Confirmed Expenses"/>
+					<separator/>
+					<filter domain="[('user_id', '=', uid)]" string="My Expenses" name="user_id"/>
+					<field name="employee_id"/>
+					<field name="department_id" string="Department" context="{'invisible_department': False}"/>
+					<group expand="0" string="Group By">
+						<filter string="Employee" name="employee" icon="terp-personal" domain="[]" context="{'group_by':'employee_id'}"/>
+						<filter string="Department" name="department" icon="terp-personal+" domain="[]" context="{'group_by':'department_id'}"/>
+						<filter string="Expenses Month" name="month" icon="terp-go-month" domain="[]" context="{'group_by':'date'}" help="Expenses by Month"/>
+					</group>
+				</search>
+			</field>
+		</record>
+
+		<record id="general_expense_all" model="ir.actions.act_window">
+			<field name="name">Advance Clearing</field>
+			<field name="res_model">hr.expense</field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="view_mode">tree,form</field>
+			<field name="search_view_id" ref="view_hr_general_expense_filter"/>
+			<field name="view_id" ref="view_general_expenses_tree"/>
+			<field name="help" type="html">
+			  <p class="oe_view_nocontent_create">
+				Click to register new general expenses. 
+			  </p><p>
+				Odoo will ensure the whole process is followed; the expense
+				sheet is validated by manager(s), the employee is reimbursed
+				from his expenses, some expenses must be re-invoiced to the
+				customers.
+			  </p>
+			</field>
+		</record>
+
+		<record id="product.product_normal_action" model="ir.actions.act_window">
+			<field name="name">Product Variants</field>
+			<field name="res_model">product.product</field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="view_mode">tree,form,kanban</field>
+		   <!--  <field name="view_type">form</field> -->
+			<field name="search_view_id" ref="product.product_search_form_view"/>
+			<field name="view_id" eval="False"/> <!-- Force empty -->
+			<field name="help" type="html">
+			  <p class="oe_view_nocontent_create">
+				Click to define a new product.
+			  </p><p>
+				You must define a product for everything you sell, whether it's
+				a physical product, a consumable or a service you offer to
+				customers.
+			  </p><p>
+				The product form contains information to simplify the sale
+				process: price, notes in the quotation, accounting data,
+				procurement methods, etc.
+			  </p>
+			</field>
+		</record>
+
+
+		
+
+		
+		<menuitem action="general_expense_all" id="general_expense" name="Advance Clearing" parent="hr_expense.menu_hr_expense_my_expenses" sequence="2" groups="base.group_user" />
+		<!-- <menuitem action="hr_expense.hr_expense_actions_all" id="hr_travel_expense_menu" name="Travel Expenses" parent="hr_expense_menu" sequence="2" /> -->
+		<menuitem id="menu_hr_expense_prepaid_record" name="Advance Request" action="action_hr_expense_prepaid_record" parent="hr_expense.menu_hr_expense_my_expenses" sequence="1" groups="base.group_user"/>
+			<!-- petty_cash_expense_extension.group_petty_user,petty_cash_expense_extension.group_petty_manager,petty_cash_expense_extension.group_petty_finance,petty_cash_expense_extension.group_petty_cashier,petty_cash_expense_extension.group_petty_admin -->
+			<!-- group_petty_user,group_petty_approver,group_petty_cashier,group_petty_admin -->
+		
+		<menuitem id="hr_expense.menu_hr_expense_configuration" name="Configuration" parent='hr_expense.menu_hr_expense_root' sequence="15" />
+
+		<menuitem action="action_hr_expense_account_view" id="hr_expense_account_menu"
+			parent="hr_expense.menu_hr_expense_configuration" name="Account" sequence="1"
+			 />
+
+		<menuitem id="menu_finance_currency" name="Currencies" parent="hr_expense.menu_hr_expense_configuration" action="base.action_currency_form" />
+
+		 <!-- hide expense to_submit, refused and report -->
+		<record model="ir.ui.menu" id="hr_expense.menu_hr_expense_my_expenses_to_submit">
+			<field name="action" eval="False"/>
+		</record>
+
+		<menuitem action="account.action_account_form" id="account.menu_action_account_form" parent="account.account_account_menu" name="Chart of Accounts" groups="petty_cash_expense_extension.group_coa_admin" sequence="1"/>
+	</data>
+</odoo>
+
+	  

@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<odoo>
+	<data>
+		<record id="view_employee_tree_inherit1" model="ir.ui.view">
+			<field name="name">Employees</field>
+			<field name="model">hr.employee</field>
+			<field name="inherit_id" ref="hr.view_employee_tree" />
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='parent_id']" position="after">
+					<field name="gm_id" />
+				</xpath>
+			</field>
+		</record>
+		<record id="view_employee_form_inherit1" model="ir.ui.view">
+			<field name="name">Employees</field>
+			<field name="model">hr.employee</field>
+			<field name="inherit_id" ref="hr.view_employee_form" />
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='parent_id']" position="after">
+					<field name="gm_id" />
+					<field name="is_gm" />
+					<field name="finance" string="Is Finance ?"/>
+				</xpath>
+			</field>
+		</record>
+	</data>
+</odoo>

@@ -1,0 +1,163 @@
+<?xml version="1.0"?>
+<odoo>
+	<data>
+		<!-- Action -->
+		<record id="view_advance_claim_form" model="ir.ui.view">
+			<field name="name">advance.claim</field>
+			<field name="model">advance.claim</field>
+			<field eval="25" name="priority" />
+			<field name="arch" type="xml">
+				<form string="Expense Sheet">
+					<header>
+						<field name="can_reset" invisible="1"/>
+						<field name="can_approve" invisible="1" />
+						<field name="is_approve" invisible="1"/>
+						<field name="is_approve_finance" invisible="1"/>
+
+						<button name="advance_claim_draft" attrs="{'invisible': [('state', 'in', ['draft','confirm'])]}" string="Set to Draft" type="object" />
+
+						<button name="advance_claim_confirm" string="Confirm" type="object" class="oe_highlight" states="draft" />
+
+						<button name="advance_claim_manager_accept" string="Manager Approved" type="object" class="oe_highlight" attrs="{'invisible': [('is_approve', '=', False)]}" groups="petty_cash_expense_extension.group_petty_manager,petty_cash_expense_extension.group_petty_admin" states="confirm" />
+
+						<button name="approve" states="manager_approve" string="Finance Approve" type="object" attrs="{'invisible': [('is_approve_finance', '=', False)]}" groups="petty_cash_expense_extension.group_petty_finance,petty_cash_expense_extension.group_petty_admin" class="oe_highlight"/>
+						
+
+						<button name="gm_approve" states="approve" string="GM Approve" groups="petty_cash_expense_extension.group_petty_finance,petty_cash_expense_extension.group_petty_gm,petty_cash_expense_extension.group_petty_admin" type="object" class="oe_highlight"/>
+
+
+						<button name="advance_claim_paid" states="gm_approve" string="Paid" type="object" groups="petty_cash_expense_extension.group_petty_cashier,petty_cash_expense_extension.group_petty_admin" class="oe_highlight"/>
+						
+						<button name="advance_claim_cashier_closed" states="paid" string="Close" type="object" class="oe_highlight"/>
+
+						<button name="cancel" states="manager_approve,approve,gm_approve,paid" string="Cancel" type="object" class="oe_highlight"/>
+
+						<button name="print_adv_claim" string="Print" type="object" class="oe_highlight" />
+
+						<field name="state" widget="statusbar" statusbar_visible="draft,confirm,manager_approve,approve,gm_approve,paid,closed"
+						 statusbar_colors='{"confirm":"blue","manager_approve":"blue","approve":"blue","gm_approve":"blue","paid":"blue","closed":"red","refuse":"red"}' />
+					</header>
+					<sheet>
+						<div class="oe_title">
+							<h1>
+								<field name="voucher_no" attrs="{'invisible': [('state', '=','draft')],'readonly': [('state', '!=', 'draft')]}" nolabel="1"/>
+							</h1>
+							
+							<h1>
+								<field name="name_reference" placeholder="e.g Mr.Aung,Business Trip"
+							nolabel="1" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+							</h1>
+						</div>
+						<br />
+						
+
+						<group>
+							<group name="left_group">
+								<field name="employee_name" attrs="{'readonly': [('state', 'not in', ('draft','confirm'))]}"/>
+								<field name="department_id" attrs="{'readonly': [('state', 'not in', ('draft','confirm'))]}" />
+								<field name="approved_by_id" attrs="{'readonly': [('state', 'not in', ('draft','confirm'))]}"/>
+								<field name="finance_approved_id" attrs="{'readonly': [('state', 'not in', ('draft','confirm'))]}"/>
+								<field name="account_ids"  attrs="{'invisible':[('state','=','draft')]}" groups="petty_cash_expense_extension.group_petty_manager,petty_cash_expense_extension.group_petty_finance,petty_cash_expense_extension.group_petty_cashier,petty_cash_expense_extension.group_petty_admin"/>
+								<field name="account_code" readonly="1" attrs="{'invisible':[('state','=','draft')]}" groups="petty_cash_expense_extension.group_petty_manager,petty_cash_expense_extension.group_petty_finance,petty_cash_expense_extension.group_petty_cashier,petty_cash_expense_extension.group_petty_admin"/>	
+								<!-- 20190524 by yma							 -->
+								<field name="analytic_id" attrs="{'readonly': [('state', '!=', 'draft')]}" invisible='1' />							
+							</group>
+							<group name="right_group">
+								<!-- Update By TPS 21-6-2019 -->
+								<field name="company_id" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+								<field name="invoice_date" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+								<field name="state_type" />
+								<field name="cash_account" attrs="{'invisible':[('state','=','draft')]}" groups="petty_cash_expense_extension.group_petty_manager,petty_cash_expense_extension.group_petty_finance,petty_cash_expense_extension.group_petty_cashier,petty_cash_expense_extension.group_petty_admin" />
+								<field name="currency_id" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+								<field name="advance_amount" string ="Amount" attrs="{'readonly':[('state','!=','draft')]}"/>
+								
+							</group>
+						</group>
+						<notebook attrs="{'invisible': [('state', 'not in', ['paid','closed'])]}">
+							<page name="journal_items" string="Advance Journal" attrs="{'invisible': [('state', 'not in', ['paid','closed'])]}" >
+								<field name="move_line_ids" nolabel="1" readonly="1">
+									<tree>
+										<field name="account_id" />
+										<field name="name" />
+										<field name="amount_currency" invisible="1"/>
+										<field name="currency_id" invisible="1"/>
+										<field name="debit" />
+										<field name="credit" />
+										<field name="tag_ids" invisible="1"/>
+									</tree>
+								</field>
+							</page>
+							
+						</notebook>
+
+						<label for="note" />
+						<br />
+						<field name="note" nolabel="1" placeholder="Advance note" />
+						
+
+					</sheet>
+					<div class="oe_chatter">
+						<field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+						<field name="activity_ids" widget="mail_activity"/>
+						<field name="message_ids" widget="mail_thread"/>
+					</div>
+				</form>
+			</field>
+		</record>
+
+		<record id="view_advance_claim_tree" model="ir.ui.view">
+			<field name="name">Claim Request</field>
+			<field name="model">advance.claim</field>
+			<field eval="25" name="priority" />
+			<field name="arch" type="xml">
+				<tree string="Claim Request" >
+					<field name="voucher_no" />
+					<field name="name_reference" />
+					<field name="employee_name" />
+					<field name="advance_amount" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+					<field name="currency_id"/>
+					<field name="expense_total" invisible="1"/>
+					<field name="invoice_date"/>
+					<field name="state" />
+				</tree>
+			</field>
+		</record>
+
+		<record id="action_advance_claim_record" model="ir.actions.act_window">
+			<field name="name">Claim Request</field>
+			<field name="res_model">advance.claim</field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="view_mode">tree,form</field>
+			<field name="view_id" ref="view_advance_claim_tree" />
+		</record>
+
+		<record id="view_advance_claim_filter" model="ir.ui.view">
+			<field name="name">advance.claim.filter</field>
+			<field name="model">advance.claim</field>
+			<field name="arch" type="xml">
+				<search string="Prepaid Expense">
+					<filter icon="terp-camera_test" domain="[('state','=','draft')]" string="Draft" name="advance_claim_draft"/>
+					<filter icon="terp-camera_test" domain="[('state','=','confirm')]" string="Confirm" name="advance_claim_confirm"/>
+					<filter icon="terp-camera_test" domain="[('state','=','manager_approve')]" string="Manager Approved" name="advance_claim_manager_accept"/>
+					<filter icon="terp-camera_test" domain="[('state','=','approve')]" string="Finance Approved" name="approve"/>
+					<filter icon="terp-camera_test" domain="[('state','=','paid')]" string="Paid" name="advance_claim_paid"/>
+					<filter icon="terp-camera_test" domain="[('state','=','closed')]" string="Close" name="expense_close"/>
+					<filter icon="terp-camera_test" domain="[('state','=','cancelled')]" string="Cancel" name="expense_canceled"/>
+					<filter icon="terp-camera_test" name="to_approve" domain="[('state','in',['confirm','manager_approve','approve'])]" string="To Approve" help="Confirmed Expenses"/>
+					<field name="name_reference" />
+					<field name="employee_name" />
+					<field name="voucher_no" string="Voucher No"/>
+					<!-- <field name="main_category" />
+					<field name="sub_category" />
+					<field name="team_id" /> -->
+					<field name="note" />
+					<field name="invoice_date" />					
+				</search>
+			</field>
+		</record>
+		
+		<menuitem action="action_advance_claim_record" id="advance_claim_menu" name="Claim Request" parent="hr_expense.menu_hr_expense_my_expenses" sequence="3" groups="base.group_user" />
+	</data>
+</odoo>
+
+	  

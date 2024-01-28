@@ -1,0 +1,157 @@
+<?xml version="1.0"?>
+<odoo>
+	<data>
+		<!-- General Expenses -->
+
+		<record id="view_general_expenses_tree" model="ir.ui.view">
+			<field name="name">hr.expense.tree</field>
+			<field name="model">hr.expense</field>
+			<field name="arch" type="xml">
+				<tree string="Advance Clearing" >
+					<field name="employee_id"/>
+					<field name="department_id" invisible="1"/>
+					<field name="date"/>
+					<field name="user_id" invisible="1"/>
+					<field name="name"/>
+					<field name="department_id"/>
+					<field name="paid_date"/>
+					<field name="amount" sum="Total Amount"/>
+					<field name="currency_id"/>
+					<field name="state"/>
+				</tree>
+			</field>
+		</record>
+
+
+		<record id="view_general_expenses_form" model="ir.ui.view">
+			<field name="name">hr.expense.form</field>
+			<field name="model">hr.expense</field>
+			<field name="arch" type="xml">
+				<form string="Advance Clearing Sheet">
+					<header>
+						<field name="can_reset" invisible="1"/>
+
+						<field name="is_approve" invisible="1"/>
+						<field name="is_approve_finance" invisible="1"/>
+						<field name="is_cashier" invisible="1"/>
+						<!-- <field name="can_approve" invisible="1"/> -->
+						<button name="general_expense_confirm" states="draft" string="Submit" type="object" class="oe_highlight"/>     
+						
+						<button name="reset_to_draft" string="Reset to Draft" type="object" class="oe_highlight" attrs="{'invisible':[('state','in',('draft','paid'))]}"/>
+
+						<button name="general_expense_manager_accept" states="confirm" string="Manager Approved" type="object" attrs="{'invisible': [('is_approve', '=', False)]}" groups="petty_cash_expense_extension.group_petty_manager,petty_cash_expense_extension.group_petty_admin" class="oe_highlight"/>
+						
+						<button name="approve" states="manager_approve" string="Finance Approved" type="object" attrs="{'invisible': [('is_approve_finance', '=', False)]}" groups="petty_cash_expense_extension.group_petty_finance,petty_cash_expense_extension.group_petty_admin" class="oe_highlight"/>
+						 
+
+						<button name="gm_approve" states="approved" groups="petty_cash_expense_extension.group_petty_finance,petty_cash_expense_extension.group_petty_gm,petty_cash_expense_extension.group_petty_admin" string="GM Approve" type="object" class="oe_highlight"/>
+						 
+
+						<button name="general_expense_paid" states="gm_approve" string="Paid" type="object" groups="petty_cash_expense_extension.group_petty_cashier,petty_cash_expense_extension.group_petty_admin" class="oe_highlight"/>
+						
+						<button string="Cancel" name="cancel" states="refuse,request,manager_approve,approved" type="object" groups="hr_expense.group_hr_expense_team_approver"/>
+
+						<button name="print_adv_clear" string="Print" type="object" class="oe_highlight" />
+
+						<field name="state" widget="statusbar" statusbar_visible="draft,confirm,manager_approve,approved,gm_approve,paid" statusbar_colors='{"confirm":"blue","manager_approve":"blue","approved":"blue","gm_approve":"blue","cancelled":"red"}'/>
+					</header>
+					<sheet>
+						<div class="oe_title">
+							<h1>
+								<field name="name" string="Invoice No" nolabel="1" class="oe_read_only" />
+							</h1>
+							<h1>
+								<field name="description" placeholder="Expense Name"
+							nolabel="1" attrs="{'readonly': [('state', 'not in', 'draft')]}"/>
+							</h1>
+						</div>
+						<group>
+							<group>
+								<!-- <field name="main_category" attrs="{'readonly': [('state', 'not in', 'draft')]}"/>
+								<field name="sub_category" attrs="{'readonly': [('state', 'not in', 'draft')]}"/> -->
+								<field name="employee_id" attrs="{'readonly': [('state', 'not in', 'draft')]}"/>
+								<!-- <field name="team_id" attrs="{'readonly': [('state', 'not in', 'draft')]}"/> -->
+								<!-- <field name="product_id" options="{'no_create': True,'no_open': False,'no_create_edit': True,'no_quick_create':True}" widget="many2many_tags"/> -->
+								<field name="date" attrs="{'readonly': [('state', 'not in', 'draft')]}"/>
+								<field name="department_id" attrs="{'readonly': [('state', 'not in', 'draft')]}"/>
+
+								<field name="approved_by_id" attrs="{'readonly': [('state', 'not in', ('draft','confirm'))]}" required="1" />
+								<field name="finance_approved_id" attrs="{'readonly': [('state', 'not in', ('draft','confirm'))]}" required="1" />
+								<!-- 20190524 by yma -->                            
+								<field name="analytic_id" string="Analytic Account" attrs="{'readonly': [('state', 'not in', 'draft')]}" invisible='1' />
+								<!-- 20190527 by yma -->
+								<field name="prepaid_type" invisible="1"/>
+
+								
+								<!-- end by  yma 20201026-->                    
+
+							</group>
+							<group>
+								<!-- <field name="user_valid" attrs="{'invisible': [('state','=','draft')]}" /> -->
+								<!-- <field name="user_valid" /> -->
+								<field name="cash_inv" invisible="1"/>
+								<field name="company_id" attrs="{'readonly': [('state', 'not in', 'draft')]}"/>
+								<field name="expense_prepaid_ids" attrs="{'readonly': [('state', 'not in', 'draft')]}"/>
+								<field name="advance_amount" invisible="1" />
+								<field name="currency_id" attrs="{'readonly': [('state', 'not in', 'draft')]}"/>
+								<field name="state_type" attrs="{'invisible':[('state','=','draft')]}" groups="petty_cash_expense_extension.group_petty_manager,petty_cash_expense_extension.group_petty_finance,petty_cash_expense_extension.group_petty_cashier,petty_cash_expense_extension.group_petty_admin" />
+								<field name="cash_account" attrs="{'invisible':['|',('cash_inv','=',True),('state','=','draft')],'required':[('cash_inv','!=',True),('state','=','confirm')]}" />
+								<field name="paid_date" invisible="1"/>
+								<field name="account_move_id" invisible="1"/>
+							</group>
+						</group>
+						<notebook>
+							<page string="Products">
+								<field name="line_ids" attrs="{'readonly': [('state', 'not in', 'draft')]}">
+								 
+								  
+									<tree string="General Expense Lines" editable="bottom">
+										<field name="sequence" invisible="1"/>
+										<field name="line_no" />
+										<field name="product_id" context="{'default_hr_expense_ok':1}" />
+
+										<field name="date_value" string="Expense Date"/>
+										<field name="ref"/>
+										<!-- 20190524 by yma -->
+										<field name="analytic_account" string="Analytical Account" invisible='1' />
+										<field name="account_ids" invisible="1"/>
+										<field name="account_code" string="Account Code" invisible="1"/>
+										<field name="adjustment_amount" />
+										<field name="amount"/>
+									</tree>
+								</field>
+								<group>
+									<div>
+										<separator string="Notes"/>
+										<field name="note" placeholder="Free Notes"/>
+									</div>
+									<group class="oe_subtotal_footer oe_right">
+										<field name="amount" widget="monetary" options="{'currency_field': 'currency_id'}" class="oe_subtotal_footer_separator"/>
+									</group>
+								</group>
+							</page>
+							<page name="expense_items" string="Expense Journal" attrs="{'invisible': [('state', '!=', 'paid')]}" >
+									<field name="exp_move_line_ids" nolabel="1" readonly="1">
+										<tree>
+											<field name="account_id" />
+											<field name="name" />
+											<field name="amount_currency" invisible="1"/>
+											<field name="currency_id" invisible="1"/>
+											<field name="debit" />
+											<field name="credit" />
+											<field name="tag_ids" invisible="1"/>
+										</tree>
+									</field>
+								</page>
+						</notebook>
+					</sheet>
+					<div class="oe_chatter">
+						<field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+						<field name="activity_ids" widget="mail_activity"/>
+						<field name="message_ids" widget="mail_thread"/>
+					</div>
+				</form>
+			</field>
+		</record>
+	</data>
+</odoo>

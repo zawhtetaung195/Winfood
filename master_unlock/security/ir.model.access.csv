@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_first_wizard,first_wizard,model_first_wizard,base.group_user,1,1,1,1
+access_first_wizard_line,first_wizard_line,model_first_wizard_line,base.group_user,1,1,1,1

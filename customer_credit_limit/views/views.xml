@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_partner_form" model="ir.ui.view">
+        <field name="name">view.res.partner</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='sales_purchases']//group[@name='container_row_2']" position="inside">
+                <group name="credit_limit">
+                    <group string="Credit Limit" colspan="2">
+                        <field name="amount_credit_limit"/>
+                        <field name="credit"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="sale_order_view_inherit_winfood2" model="ir.ui.view">
+        <field name="name">Sale Order form</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/group/group/field[@name='partner_id']" position="after">
+                <field name="manager_approve" invisible="1" string="Manager approve"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="sale.sale_order_view_search_inherit_quotation" model="ir.ui.view">
+        <field name="name">sale.order.search.inherit.quotation</field>
+        <field name="model">sale.order</field>
+        <field name="mode">primary</field>
+        <field name="inherit_id" ref="sale.view_sales_order_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='my_sale_orders_filter']" position="replace">
+                <field name="campaign_id"/>
+                <separator/>
+                <filter string="My Quotations" name="my_quotation" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter string="Quotations" name="draft" domain="[('state','in',('draft', 'sent'))]"/>
+                <filter string="Credit Limit Approved" name="credit_limit_approved" domain="[('credit_approve','=', True)]"/>
+                <filter string="Sales Orders" name="sales" domain="[('state','in',('sale','done'))]"/>
+                <separator/>
+                <filter string="Create Date" name="filter_create_date" date="create_date"/>
+            </xpath>
+        </field>
+    </record>
+    
+    <record id="view_quotation_tree_with_onboarding_tree_inherit" model="ir.ui.view">
+        <field name="name">sale.view_quotation_tree_with_onboarding.tree</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_quotation_tree_with_onboarding" />
+        <field name="arch" type="xml">
+            <field name="state" position="after">
+                <field name="credit_approve" optional="show"/>
+            </field>
+        </field>
+    </record>
+</odoo>

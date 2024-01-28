@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="personal_information_inherit_winfood" model="ir.ui.view">
+            <field name="name">Personal information page for contacts form</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='email']" position="replace">
+                    <field name="email" string="Email" widget="email" context="{'gravatar_image': True}"/>
+                </xpath>
+                <xpath expr="//sheet/group" position="before">
+                    <!-- <div class="oe_inline">
+                        <h1><field name="barcode" readonly="1" /></h1>
+                    </div> -->
+                    <div style="font-weight: bold;" class="oe_inline">
+                        <group>
+                            <field name="customer_rank" invisible="1" />
+                            <field name="gene_password" attrs="{'invisible': [('customer_rank','&lt;',1)]}" style="font-size:16px"/>
+                        </group>
+                        
+                    </div>
+                </xpath>
+                <xpath expr="//sheet/group/group/span[@name='address_name']" position="before">
+                    <field name="barcode" readonly="1" />
+                </xpath>
+                <xpath expr="//sheet/group/group/div/field[@name='city']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//sheet/group/group/div/field[@name='city']" position="after">
+                    <div class="d-flex">
+                        <!-- <field name="state_id" class="o_address_state" placeholder="State" 
+                        options="{&quot;no_open&quot;: True}" 
+                        attrs="{'readonly': [('type', '=', 'contact'),('parent_id', '!=', False)]}" 
+                        context="{'country_id': country_id, 'zip': zip}"/> -->
+                        <field name="city_id" placeholder="City" style="margin-right:10px;" domain="[('state_id', '=', state_id)]"/>
+                        <field name="township_id" placeholder="Township"/>
+                    </div>
+                </xpath>
+                <xpath expr="//sheet/notebook/page/field[@name='child_ids']/form//div[@class='o_address_format']/field[@name='city']"
+                       position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//sheet/notebook/page/field[@name='child_ids']/form//div[@class='o_address_format']/field[@name='city']"
+                       position="after">
+                    <div class="d-flex">
+                        <field name="city_id" placeholder="City" style="margin-right:10px;"/>
+                        <field name="township_id" placeholder="Township"/>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="view_winfood_township_form">
+            <field name="name">Township Form</field>
+            <field name="model">res.township</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                            </group>
+                            <group>
+                                <field name="city_id" options="{'no_create_edit':True,'no_create':True}"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="view_res_township_tree">
+            <field name="name">Township Tree</field>
+            <field name="model">res.township</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <field name="city_id"/>
+                </tree>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="res_township_action">
+            <field name="name">Township</field>
+            <field name="res_model">res.township</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <record model="ir.ui.view" id="view_winfood_city_form">
+            <field name="name">City Form</field>
+            <field name="model">res.city</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="state_id"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>`
+        <record model="ir.ui.view" id="view_res_city_tree">
+            <field name="name">City Tree</field>
+            <field name="model">res.city</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <field name="state_id"/>
+                </tree>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="res_city_action">
+            <field name="name">City</field>
+            <field name="res_model">res.city</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <menuitem name="City" id="res_city" parent="contacts.res_partner_menu_config"
+                  action="res_city_action"/>
+        <menuitem name="Township" id="winfood_township" parent="contacts.res_partner_menu_config"
+                  action="res_township_action"/>
+    </data>
+</odoo>

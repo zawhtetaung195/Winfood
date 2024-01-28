@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+    <!-- My Sale Orders Views -->
+        <template id="sale.portal_my_orders" name="My Sales Orders">
+            <t t-call="portal.portal_layout">
+                <t t-set="breadcrumbs_searchbar" t-value="True"/>
+
+                <t t-call="portal.portal_searchbar">
+                    <t t-set="title">Sales Orders</t>
+                </t>
+                <t t-if="not orders">
+                    <p>There are currently no orders for your account.</p>
+                </t>
+                <t t-if="orders" t-call="portal.portal_table">
+                    <thead>
+                        <tr class="active">
+                            <th>
+                                <span class='d-none d-md-inline'>Sales Order #</span>
+                                <span class='d-block d-md-none'>Ref.</span>
+                            </th>
+                            <th class="text-right">Order Date</th>
+                            <th class="text-right">Confirmed</th>
+                            <th class="text-center"/>
+                            <th class="text-right">Total</th>
+                        </tr>
+                    </thead>
+                    <t t-foreach="orders" t-as="order">
+                        <tr>
+                            <td><a t-att-href="order.get_portal_url()"><t t-esc="order.name"/></a></td>
+                            <td class="text-right">
+                                <span t-field="order.date_order" t-options="{'widget': 'date'}"/>&amp;nbsp;
+                                <span class='d-none d-md-inline' t-field="order.date_order" t-options="{'time_only': True}"/>
+                            </td>
+                            <td class="text-right">
+                                <span t-if="order.customer_confirmation == True"  class="badge badge-pill badge-success">
+                                    <i class="fa fa-fw fa-check" role="img" aria-label="Confirmed" title="Confirmed"/>
+                                </span>
+                                <span t-if="order.customer_confirmation == False"  class="badge badge-pill badge-info">
+                                    <i class="fa fa-fw fa-remove" role="img"/>
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <span t-if="order.state == 'done'"  class="badge badge-pill badge-success">
+                                    <i class="fa fa-fw fa-check" role="img" aria-label="Done" title="Done"/>Done
+                                </span>
+                            </td>
+                            <td class="text-right"><span t-field="order.amount_total"/></td>
+                        </tr>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+    <!-- My Quotations Views -->
+        <template id="sale.portal_my_quotations" name="My Quotations">
+            <t t-call="portal.portal_layout">
+                <t t-set="breadcrumbs_searchbar" t-value="True"/>
+
+                <t t-call="portal.portal_searchbar">
+                    <t t-set="title">Quotations</t>
+                </t>
+                <t t-if="not quotations">
+                    <p>There are currently no quotations for your account.</p>
+                </t>
+                <t t-if="quotations" t-call="portal.portal_table">
+                    <thead>
+                        <tr class="active">
+                            <th>Quotation #</th>
+                            <th class="text-right">Quotation Date</th>
+                            <th class="text-right">Valid Until</th>
+                            <th class="text-right">Confirmed</th>
+                            <th class="text-center"/>
+                            <th class="text-right">Total</th>
+                        </tr>
+                    </thead>
+                    <t t-foreach="quotations" t-as="quotation">
+                        <tr>
+                            <td><a t-att-href="quotation.get_portal_quotation_url()"><t t-esc="quotation.name"/></a></td>
+                            <td class="text-right"><span t-field="quotation.date_order"/></td>
+                            <td class="text-right"><span t-field="quotation.validity_date"/></td>
+                            <td class="text-right">
+                                <span t-if="quotation.customer_confirmation == True"  class="badge badge-pill badge-success">
+                                    <i class="fa fa-fw fa-check" role="img" aria-label="Confirmed" title="Confirmed"/>
+                                </span>
+                                <span t-if="quotation.customer_confirmation == False"  class="badge badge-pill badge-info">
+                                    <i class="fa fa-fw fa-remove" role="img"/>
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <span t-if="quotation.state == 'cancel'" class="badge badge-pill badge-secondary"><i class="fa fa-fw fa-remove"/> Cancelled</span>
+                                <span t-if="quotation.is_expired" class="badge badge-pill badge-secondary"><i class="fa fa-fw fa-clock-o"/> Expired</span>
+                            </td>
+                            <td class="text-right">
+                                <span t-field="quotation.amount_total"/>
+                            </td>
+                        </tr>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+    <!-- Home Menu Views -->
+        <template id="sale.portal_my_home_menu_sale" name="Portal layout : sales menu entries" inherit_id="portal.portal_breadcrumbs" priority="20">
+            <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+                <li t-if="page_name == 'quote' or sale_order and sale_order.state in ('draft', 'sent', 'cancel')" t-attf-class="breadcrumb-item #{'active ' if not sale_order else ''}">
+                    <a t-if="sale_order" t-attf-href="/my/quotes?{{ keep_query() }}">Quotations</a>
+                    <t t-else="">Quotations</t>
+                </li>
+                <li t-if="page_name == 'order' or sale_order and sale_order.state not in ('draft', 'sent', 'cancel')" t-attf-class="breadcrumb-item #{'active ' if not sale_order else ''}">
+                    <a t-if="sale_order" t-attf-href="/my/orders?{{ keep_query() }}">Sales Orders</a>
+                    <t t-else="">Sales Orders</t>
+                </li>
+                <li t-if="sale_order" class="breadcrumb-item active">
+                    <span t-field="sale_order.type_name"/>
+                    <t t-esc="sale_order.name"/>
+                </li>
+            </xpath>
+        </template>
+
+    <!-- sale_order_portal_template -->
+        <template id="sale_order_portal_template_winfood" inherit_id="sale.sale_order_portal_template">
+            <xpath expr="//t[@t-set='entries']" position="replace">
+                <t t-set="entries">
+                    <ul class="list-group list-group-flush flex-wrap flex-row flex-lg-column">
+                        <li class="list-group-item flex-grow-1">
+                            <div class="o_download_pdf btn-toolbar flex-sm-nowrap">
+                                <div class="btn-group flex-grow-1 mr-1 mb-1">
+                                    <a class="btn btn-secondary btn-block o_download_btn"
+                                    t-att-href="sale_order.set_action_confirm_from_portal(confirm=True,type=sale_order.state)"
+                                    title="CONFIRM">
+                                    
+                                        <span style="color:white;">CONFIRM</span>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="o_download_pdf btn-toolbar flex-sm-nowrap">
+                                <div class="btn-group flex-grow-1 mr-1 mb-1">
+                                    <a class="btn btn-secondary btn-block o_download_btn"
+                                    t-att-href="sale_order.get_portal_url(report_type='pdf', download=True)"
+                                    title="Download">
+                                        <i class="fa fa-download"/>
+                                        Download
+                                    </a>
+                                </div>
+                                <div class="btn-group flex-grow-1 mb-1">
+                                    <a class="btn btn-secondary btn-block o_print_btn o_portal_invoice_print"
+                                    t-att-href="sale_order.get_portal_url(report_type='pdf')"
+                                    id="print_invoice_report" title="Print" target="_blank">
+                                        <i class="fa fa-print"/>
+                                        Print
+                                    </a>
+                                </div>
+                            </div>
+                        </li>
+
+                        <li class="navspy list-group-item pl-0 flex-grow-1" t-ignore="true"
+                            role="complementary">
+                            <ul class="nav flex-column bs-sidenav"></ul>
+                        </li>
+
+                        <t t-if="not sale_order.is_expired and sale_order.state in ['draft', 'sent']">
+                            <li t-if="sale_order.validity_date" class="list-group-item">
+                                <small><b class="text-muted">This offer expires on</b></small>
+                                <div t-field="sale_order.validity_date"></div>
+                            </li>
+                            <li t-if="sale_order.amount_undiscounted - sale_order.amount_untaxed &gt; 0.01"
+                                class="list-group-item flex-grow-1">
+                                <small>
+                                    <b class="text-muted">Your advantage</b>
+                                </small>
+                                <small>
+                                    <b t-field="sale_order.amount_undiscounted"
+                                    t-options='{"widget": "monetary", "display_currency": sale_order.pricelist_id.currency_id}'
+                                    style="text-decoration: line-through"
+                                    class="d-block mt-1"
+                                    data-id="amount_undiscounted"/>
+                                </small>
+                                <t t-if="sale_order.amount_untaxed == sale_order.amount_total">
+                                    <h4 t-field="sale_order.amount_total" class="text-success"
+                                        data-id="total_amount"/>
+                                </t>
+                                <t t-else="">
+                                    <h4 t-field="sale_order.amount_untaxed" class="text-success mb-0"
+                                        data-id="total_untaxed"/>
+                                    <small>(
+                                        <span t-field="sale_order.amount_total" data-id="total_amount"/>
+                                        Incl. tax)
+                                    </small>
+                                </t>
+                            </li>
+                        </t>
+
+                        <li t-if="sale_order.user_id" class="list-group-item flex-grow-1">
+                            <div class="small mb-1">
+                                <strong class="text-muted">Salesperson</strong>
+                            </div>
+                            <div class="row flex-nowrap">
+                                <div class="col flex-grow-0 pr-2">
+                                    <img class="rounded-circle mr4 float-left o_portal_contact_img"
+                                        t-if="sale_order.user_id.image_1024"
+                                        t-att-src="image_data_uri(sale_order.user_id.image_1024)"
+                                        alt="Contact"/>
+                                    <img class="rounded-circle mr4 float-left o_portal_contact_img"
+                                        t-if="not sale_order.user_id.image_1024"
+                                        src="/web/static/src/img/placeholder.png" alt="Contact"/>
+                                </div>
+                                <div class="col pl-0" style="min-width: 150px">
+                                    <span t-field="sale_order.user_id"
+                                        t-options='{"widget": "contact", "fields": ["name", "phone"], "no_marker": True}'/>
+                                    <a href="#discussion" class="small">
+                                        <i class="fa fa-comment"></i>
+                                        Send message
+                                    </a>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </t>
+            </xpath>
+        </template> 
+
+    <!-- Admin Views -->
+        <record id="sale_order_view_inherit_winfood" model="ir.ui.view">
+            <field name="name">Sale Order form</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet/group/group/field[@name='partner_id']" position="after">
+                    <field name="customer_confirmation" readonly="1" string="Customer Information"/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

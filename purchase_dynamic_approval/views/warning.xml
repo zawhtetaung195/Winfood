@@ -1,0 +1,23 @@
+<odoo>
+
+    <record id="view_approval_warning_message_form" model="ir.ui.view">
+        <field name="name">approval.warning.message.form</field>
+        <field name="model">approval.warning.message</field>
+        <field name="arch" type="xml">
+            <form string="Approval Warning Message">
+                <div class="row container">
+                    <div class="col-12 text-center">
+                      <div class="card text-white bg-danger mb-3 w-75 ml64">
+                        <div class="card-body bg-transparent text-center">
+                          <p><field name="name" readonly="1"/> </p>
+                        </div>
+                      </div>
+                    </div>
+                </div>
+                <footer>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

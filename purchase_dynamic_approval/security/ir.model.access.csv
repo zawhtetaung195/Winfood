@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_purchase_order_approval,purchase_order_approval,model_purchase_order_approval,base.group_user,1,1,1,1
+access_purchase_approval_line,purchase_approval_line,model_purchase_approval_line,base.group_user,1,1,1,1
+access_acknowledge_approver_line,purchase_acknowledge_line,model_purchase_acknowledge_line,base.group_user,1,1,1,1
+access_approval.warning.message,approval.warning.message,model_approval_warning_message,base.group_user,1,1,1,1

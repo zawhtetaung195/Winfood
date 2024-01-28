@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="customer_unique_code_seq" model="ir.sequence">
+            <field name="name">Customer Unique Code</field>
+            <field name="code">res.partner</field>
+            <field name="code">customer</field>
+            <field name="prefix">C</field>
+            <field name="padding">5</field>
+            <field eval="False" name="company_id"/>
+        </record>
+        <record id="supplier_unique_code_seq" model="ir.sequence">
+            <field name="name">Supplier Unique Code</field>
+            <field name="code">res.partner</field>
+            <field name="code">supplier</field>
+            <field name="prefix">S</field>
+            <field name="padding">5</field>
+            <field eval="False" name="company_id"/>
+        </record>
+    </data>
+</odoo>

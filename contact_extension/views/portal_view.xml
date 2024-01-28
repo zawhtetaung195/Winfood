@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- hide other model from portal view -->
+    <template id="purchase.portal_my_home_purchase" name="Show Requests for Quotation / Purchase Orders" customize_show="True" inherit_id="portal.portal_my_home" priority="25">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t></t>
+        </xpath>
+    </template>    
+
+    <template id="project.portal_my_home" name="Show Projects / Tasks" customize_show="True" inherit_id="portal.portal_my_home" priority="40">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t></t>
+        </xpath>
+    </template>
+    <template id="helpdesk.portal_my_home_helpdesk_ticket" name="Show Tickets" customize_show="True" inherit_id="portal.portal_my_home" priority="50">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t></t>
+        </xpath>
+    </template>
+</odoo>

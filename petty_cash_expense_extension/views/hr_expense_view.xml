@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+		<record id="hr_expense_view_form_inherit" model="ir.ui.view">
+			<field name="name">Expenses</field>
+			<field name="model">hr.expense</field>
+			<field name="inherit_id" ref="hr_expense.hr_expense_view_form" />
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='account_id']" position="after">
+					<field name="approved_by_id" />
+				</xpath>
+			</field>
+		</record>
+		<record id="view_hr_expense_sheet_form_inherit" model="ir.ui.view">
+			<field name="name">Expenses Sheet</field>
+			<field name="model">hr.expense.sheet</field>
+			<field name="inherit_id" ref="hr_expense.view_hr_expense_sheet_form" />
+			<field name="arch" type="xml">
+				<xpath expr="//button[@name='approve_expense_sheets']" position="replace">
+					<field name="is_approve" invisible="1" />
+					<button name="approve_expense_sheets" states="submit" string="Approve" type="object" attrs="{'invisible':['|', ('is_approve', '=', False)]}" class="oe_highlight o_expense_sheet_approve"/>
+				</xpath>
+				<xpath expr="//field[@name='payment_mode']" position="after">
+					<field name="approved_by_id" />
+				</xpath>
+			</field>
+		</record>
+	</data>
+</odoo>

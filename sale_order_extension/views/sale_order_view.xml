@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<record model="ir.ui.view" id="view_order_form_inherited">
+		<field name="name">sale.order.form</field>
+		<field name="model">sale.order</field>
+		<field name="inherit_id" ref="sale.view_order_form"/>
+       <field name="arch" type="xml">
+            <field name="partner_id" position="attributes">
+                <attribute name="domain">[('customer_rank','>', 0)]</attribute>
+            </field>
+            <xpath expr="//header/button[8]" position="after">
+                <button name="action_confirm" data-hotkey="v"
+                string="Confirm" type="object"
+                attrs="{'invisible': [('state', 'not in', ['request'])]}" groups="sales_team.group_sale_manager" />
+            </xpath>
+		</field>
+   </record>
+   <record model="ir.ui.view" id="sale_order_view_search_inherit_quotation2">
+		<field name="name">sale.order.inherit.search</field>
+		<field name="model">sale.order</field>
+		<field name="inherit_id" ref="sale.sale_order_view_search_inherit_quotation"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search/filter[@name='my_quotation']" position="after">
+                <filter string="Request" name="my_request" domain="[('state', '=', 'request')]"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="action_request_with_onboarding" model="ir.actions.act_window">
+        <field name="name">Approver Request</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_id" ref="sale.view_quotation_tree_with_onboarding"/>
+        <field name="view_mode">tree,kanban,form,calendar,pivot,graph,activity</field>
+        <field name="search_view_id" ref="sale_order_view_search_inherit_quotation2"/>
+        <field name="context">{'search_default_my_request': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+            Create a new quotation, the first step of a new sale!
+            </p><p>
+            Once the quotation is confirmed by the customer, it becomes a sales order.<br/> You will be able to create an invoice and collect the payment.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_sale_request"
+    action="action_request_with_onboarding"
+    parent="sale.sale_order_menu"
+    sequence="1" groups="sales_team.group_sale_salesman"/>
+</odoo>

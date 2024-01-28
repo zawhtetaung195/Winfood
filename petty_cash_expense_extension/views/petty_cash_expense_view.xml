@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+		<record id="view_petty_cash_expense_tree" model="ir.ui.view">
+			<field name="name">petty.cash.expense.tree</field>
+			<field name="model">petty.cash.expense</field>
+			<field name="arch" type="xml">
+				<tree>
+					<field name="requested_by_id" />
+					<field name="approved_by_id" />
+					<field name="amount" />
+					<field name="description" />
+					<field name="request_journal_id" />
+					<field name="payment_journal_id" />
+					<field name="date_requested" />
+					<field name="date_received" />
+				</tree>
+			</field>
+		</record>
+
+		<record id="view_approve" model="ir.ui.view">
+			<field name="name">Approve Petty Cash Request</field>
+			<field name="model">petty.cash.approve</field>
+			<field eval="2" name="priority"/>
+			<field name="arch" type="xml">
+				<form string="Approve Petty Cash Request">
+					<p>Please set a payment journal to transfer the funds from. </p>
+					<field name="petty_request" invisible="1" />
+					<group>
+						<field name="payment_journal_id" />
+					</group>
+					<footer>
+						<button icon="fa-gear" string="Approve" name="approve" type="object" class="oe_highlight"  />
+					</footer>
+			   </form>
+			</field>
+		</record>
+
+		<record id="action_approve" model="ir.actions.act_window">
+			<field name="name">Approve Petty Cash Request</field>
+			<field name="res_model">petty.cash.approve</field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="view_mode">form</field>
+			<field name="view_id" ref="view_approve"/>
+			<field name="context">{'default_petty_request': active_id}</field>
+			<field name="target">new</field>
+		</record>
+
+
+		<record id="view_petty_cash_expense_form" model="ir.ui.view">
+			<field name="name">petty.cash.expense.form</field>
+			<field name="model">petty.cash.expense</field>
+			<field name="arch" type="xml">
+				<form>
+					<field name="is_approve" invisible="1"/>
+					<field name="is_approve_finance" invisible="1"/>
+					<header>
+						<button string="Request for Approval" name="request" states="draft" type="object" class="oe_highlight"/>
+
+						<button string="Manager Approve" name="manager_validate" states="request" type="object" class="oe_highlight" attrs="{'invisible':['|', ('is_approve', '=', False)]}"/>
+
+						<button name="%(action_approve)d" type="action" states="manager_validate" string="Finance Approve" class="oe_highlight" context="{'default_petty_request': active_id}" attrs="{'invisible':['|', ('is_approve_finance', '=', False)]}" />
+
+						<button name="gm_approve" states="approve" string="GM Approve" type="object" groups="petty_cash_expense_extension.group_petty_gm,petty_cash_expense_extension.group_petty_admin" class="oe_highlight"/>
+
+						<button string="Send to Draft" name="draft" states="refuse,validate" type="object" groups="hr_expense.group_hr_expense_team_approver" class="oe_highlight"/>
+
+						<button string="Refuse" name="refuse" states="request,validate" type="object" class="oe_highlight"/>
+
+						 <!-- attrs="{'invisible':[('state', 'not in',('request','validate'))]}" -->
+
+						<button string="Cancel" name="cancel" states="refuse,request,manager_validate,validate" type="object" groups="hr_expense.group_hr_expense_team_approver"/>
+
+						<field name="state" widget="statusbar" statusbar_visible="draft,request,manager_validate,validate,gm_approve,refuse" statusbar_colors='{"draft":"blue","request":"blue","manager_validate":"blue","validate":"blue","gm_approve":"blue","refuse":"red"}'/>
+					</header>
+					<sheet>
+						<div class="oe_title">
+							<h1>
+								<field name="name" nolabel="1" attrs="{'readonly': [('state', 'in', ('draft','request','validate'))]}"/>
+							</h1>
+						</div>
+						<br />
+						<group>
+							<group>
+								<field name="requested_by_id" attrs="{'readonly': [('state', 'not in', ('draft','confirm'))]}"/>
+								<field name="approved_by_id" attrs="{'readonly': [('state', 'not in', ('draft','confirm'))]}"/>
+								<field name="finance_approved_id" attrs="{'readonly': [('state', 'not in', ('draft','confirm'))]}"/>
+								<field name="amount" attrs="{'readonly': [('state', 'not in', ('draft','confirm'))]}"/>
+								<field name="description"  attrs="{'readonly': [('state', 'not in', 'draft')]}"/>
+								<field name="currency_id" invisible="0" />
+							</group>
+							<group>
+								<field name="request_journal_id" attrs="{'readonly': [('state', 'not in', 'draft')]}" required="1" />
+								<field name="payment_journal_id" attrs="{'readonly': [('state', 'not in', 'draft')]}" required="1" />
+								<field name="date_requested" attrs="{'readonly': [('state', 'not in', 'draft')]}" required="1" />
+								<field name="date_received" attrs="{'readonly': [('state', 'not in', 'draft')]}" required="1" />
+							</group>
+						</group>
+						<notebook>
+							<page string="Payment Line" name="payment_line">
+								<field name="payment_line_ids" readonly="1"/>
+							</page>
+							<page string="Move Line" name="move_line">
+								<field name="move_line_ids" >
+								</field>
+							</page>
+						</notebook>
+					</sheet>
+					<div class="oe_chatter">
+						<field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+						<field name="activity_ids" widget="mail_activity"/>
+						<field name="message_ids" widget="mail_thread"/>
+					</div>
+				</form>
+			</field>
+		</record>
+		
+
+		<record id="petty_cash_request_view_search" model="ir.ui.view">
+			<field name="name">petty.cash.request.view.search</field>
+			<field name="model">petty.cash.expense</field>
+			<field name="arch" type="xml">
+				<search string="Petty Cash Request">
+					<field name="requested_by_id" />
+					<field name="approved_by_id" />
+					<field name="date_requested" />
+					<field name="date_received" />
+					<field name="state" />
+					<filter string="State" name="state_request" domain="[('state', '=', 'request')]"/>
+					<filter string="Approve" name="state_approve" domain="[('state', '=', 'validate')]"/>
+				</search>
+			</field>
+		</record>
+
+		<record id="cash_advance_request_view_search" model="ir.ui.view">
+			<field name="name">petty.cash.request.view.search</field>
+			<field name="model">petty.cash.expense</field>
+			<field name="arch" type="xml">
+				<search string="Petty Cash Request">
+					<field name="requested_by_id" />
+					<field name="approved_by_id" />
+					<field name="date_requested" />
+					<field name="date_received" />
+					<field name="state" />
+					<filter string="State" name="state_request" domain="[('state', '=', 'request')]"/>
+					<filter string="Approve" name="state_approve" domain="[('state', '=', 'validate')]"/>
+				</search>
+			</field>
+		</record>
+
+		<record id="action_petty_cash_request" model="ir.actions.act_window">
+			<field name="name">Petty Cash Requests</field>
+			<field name="res_model">petty.cash.expense</field>
+			<field name="view_mode">tree,form</field>
+			<field name="search_view_id" ref="petty_cash_request_view_search"/>
+			<field name="context">{'search_default_state_request': 1}</field>
+			<field name="help" type="html">
+			  <p class="o_view_nocontent_smiling_face">
+				Create a new Petty Cash Requests
+			  </p>
+			</field>
+		</record>
+
+		<record id="action_cash_advance_request" model="ir.actions.act_window">
+			<field name="name">Cash Advance Requests</field>
+			<field name="res_model">petty.cash.expense</field>
+			<field name="view_mode">tree,form</field>
+			<field name="search_view_id" ref="cash_advance_request_view_search"/>
+			<field name="context">{'search_default_state_request': 1}</field>
+			<field name="help" type="html">
+			  <p class="o_view_nocontent_smiling_face">
+				Create a new Petty Cash Requests
+			  </p>
+			</field>
+		</record>
+
+		<record id="hr_expense_actions_my_unsubmitted" model="ir.actions.act_window">
+			<field name="name">My Cash Advance Expenses</field>
+			<field name="res_model">hr.expense</field>
+			<field name="view_mode">tree,kanban,form,graph,pivot,activity</field>
+			<field name="search_view_id" ref="hr_expense.hr_expense_view_search"/>
+			<field name="context">{'search_default_my_expenses': 1, 'search_default_no_report': 1}</field>
+			<field name="help" type="html">
+			  <p class="o_view_nocontent_smiling_face">
+				Create a new expense
+			  </p>
+			</field>
+		</record>
+
+		<record id="view_account_payment_form_inherit_1" model="ir.ui.view">
+			<field name="name">Payment Voucher</field>
+			<field name="model">account.payment</field>
+			<field name="inherit_id" ref="account.view_account_payment_form" />
+			<field name="arch" type="xml">
+				<xpath expr="//button[@name='cancel']" position="replace">
+					<button name="cancel" states="posted,sent,reconciled" string="Cancel" type="object"/>
+				</xpath>
+				<xpath expr="//field[@name='journal_id']" position="after">
+					<field name="sequence" />
+				</xpath>
+			</field>
+		</record>
+
+		<menuitem id="hr_expense.menu_hr_expense_root" name="Petty Cash" sequence="26" web_icon="hr_expense,static/description/icon.png"/>
+
+		<menuitem id="hr_expense.menu_hr_expense_my_expenses" name="Requests" sequence="1" parent="hr_expense.menu_hr_expense_root"/>
+
+		<menuitem id="petty_cash_request_menu" name="Petty Cash Requests" parent="hr_expense.menu_hr_expense_my_expenses" action="action_petty_cash_request" sequence="3" />
+
+		<!-- <menuitem id="cash_advance_request_menu" name="Cash Advance Requests" parent="hr_expense.menu_hr_expense_my_expenses" action="action_cash_advance_request" sequence="2" groups="petty_cash_expense_extension.group_petty_user,petty_cash_expense_extension.group_petty_manager,petty_cash_expense_extension.group_petty_finance" /> -->
+
+		<!-- <menuitem id="hr_expense.menu_hr_expense_my_expenses_to_submit" name="My Cash Advance Expenses" sequence="3" parent="hr_expense.menu_hr_expense_my_expenses" action="hr_expense_actions_my_unsubmitted"/> -->
+
+		<menuitem id="hr_expense.menu_hr_expense_sheet_my_reports" sequence="4" parent="hr_expense.menu_hr_expense_my_expenses" action="hr_expense.action_hr_expense_sheet_my_all"/>
+
+
+	</data>
+</odoo>

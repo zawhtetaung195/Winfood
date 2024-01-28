@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Tree view for "purchase.order.approval" -->
+    <record id="view_purchase_order_approval_tree" model="ir.ui.view">
+        <field name="name">view.purchase.order.approval.tree</field>
+        <field name="model">purchase.order.approval</field>
+        <field name="type">tree</field>
+        <field name="mode">primary</field>
+        <field name="priority" eval="16" />
+        <field name="active" eval="True" />
+        <field name="arch" type="xml">
+            <tree string="model_tree" create="true" delete="true" edit="true">
+                <field name="name"/>
+                <field name="department_id"/>
+            </tree>
+        </field>
+    </record>
+    
+    <!-- Form view for "purchase.order.approval" -->
+    <record id="view_purchase_order_approval_form" model="ir.ui.view">
+        <field name="name">view.purchase.order.approval.form</field>
+        <field name="model">purchase.order.approval</field>
+        <field name="type">form</field>
+        <field name="mode">primary</field>
+        <field name="priority" eval="16" />
+        <field name="active" eval="True" />
+        <field name="arch" type="xml">
+            <form string="model_form">
+                <header>
+                    <button name="get_approvers" string="Get Approver"  class="oe_read_only" context="{'analytic_account_id': context.get('analytic_account_id', False)}" type="object" icon="fa-external-link-square"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only" />
+                        <h1>
+                            <field name="name" class="oe_inline" placeholder="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="analytic_account_id"/>
+                            <field name="company_id"/>                            
+                        </group>
+                        <group>
+                            <field name="department_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="approvers" string="Approvers">
+                            <field name="approval_line_ids">
+                                <tree string="Approvers" editable="bottom">
+                                    <field name="approver_id" domain="[('share','=',False)]"/>
+                                    <field name="minimum_amount"/>
+                                    <field name="maximum_amount"/>
+                                    <field name="name"/>
+                                </tree>                                
+                            </field>
+                        </page>
+                    </notebook>
+                    <notebook>
+                        <page name="acknowledgers" string="Acknowledgers">
+                            <field name="acknowledge_line_ids" editable="bottom">
+                                <tree string="" create="true" delete="true" edit="true" editable="bottom">
+                                    <field name="sequence_no" widget="handle"/>
+                                    <field name="acknowledger_id" domain="[('share','=',False)]"/>
+                                </tree>                                
+                            </field>
+                        </page>
+                    </notebook>          
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Search view for "purchase.order.approval" -->
+    <record id="view_purchase_order_approval_search" model="ir.ui.view">
+        <field name="name">view.purchase.order.approval.search</field>
+        <field name="model">purchase.order.approval</field>
+        <field name="type">search</field>
+        <field name="mode">primary</field>
+        <field name="priority" eval="16" />
+        <field name="active" eval="True" />
+        <field name="arch" type="xml">
+            <search string="model_search">
+                <field name="name" />
+            </search>
+        </field>
+    </record>
+    
+    <!-- Main window action for "purchase.order.approval" -->
+    <record id="purchase_order_approval_act_window" model="ir.actions.act_window">
+        <field name="type">ir.actions.act_window</field>
+        <field name="name">Purchase Order Approval</field>
+        <field name="res_model">purchase.order.approval</field>
+        <field name="view_mode">tree,form</field>
+        <field name="target">current</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+        <field name="search_view_id" ref="view_purchase_order_approval_search" />
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click to add new Human readable name
+            </p><p>
+                Something about 
+            </p>
+        </field>
+    </record>
+    
+    <!-- Main menu for "purchase.order.approval" -->
+    <record id="menu_purchase_order_approval" model="ir.ui.menu" >
+        <field name="name">Purchase Approval</field>
+        <field name="sequence" eval="40" />
+        <field name="action" ref="purchase_order_approval_act_window" />
+        <field name="parent_id" ref="purchase.menu_purchase_config" />
+    </record>
+    
+
+</odoo>

@@ -1,0 +1,52 @@
+<odoo>
+  <data>
+    <record id="purchase_order_inherit_form" model="ir.ui.view">
+      <field name="name">purchase_order_inherit_form</field>
+      <field name="model">purchase.order</field>
+      <field name="inherit_id" ref="purchase.purchase_order_form"/>
+      <field name="arch" type="xml">
+        <xpath expr="//sheet/group/group[last()]" position="after">
+          <group name="approval" string="Approval" groups="base.group_no_one">
+            <field name="approver_ids" widget="many2many_tags" options="{'no_create_edit': True}" readonly="1"/>
+            <field name="acknowledger_ids" widget="many2many_tags" options="{'no_create_edit': True}" readonly="1"/>
+            <field name="ami_responsible_ack" invisible="1" />
+            <field name="ami_responsible_approve" invisible="1" />
+          </group>
+          <group string="Approval">
+            <field name="done_ids" widget="many2many_tags" readonly="1"/>
+          </group>
+          <!-- <group>
+            <field name="message_follower_ids"/>
+            <field name="activity_ids"/>
+            <field name="message_ids"/>
+          </group> -->
+        </xpath>
+        <field name="state" position="replace">
+          <field name="state" widget="statusbar" statusbar_visible="draft,sent,waiting_ack,waiting_approval,purchase" readonly="1"/>
+        </field>
+
+        <xpath expr="//form/header/button[@id='bid_confirm']" position="replace">
+          <button name="button_confirm" groups="base.group_no_one" type="object" states="sent" string="Confirm Order" class="oe_highlight" id="bid_confirm" data-hotkey="v"/>
+        </xpath>
+
+        <xpath expr="//form/header/button[@id='draft_confirm']" position="replace">
+          <button name="button_confirm" groups="base.group_no_one" type="object" states="draft" string="Confirm Order" id="draft_confirm"/>
+        </xpath>
+
+        <xpath expr="//form/header" position="inside">
+          <button class="btn btn-primary" name="set_to_draft" groups='base.group_no_one' type="object" string="SetToDraft"/>
+          <button class="btn btn-primary" name="set_to_waiting_ack" groups='base.group_no_one' type="object" string="Set TO Waiting ACK" attrs="{'invisible': [('state', '=', 'waiting_ack')]}"/>
+          <button class="btn btn-primary" name="acknowledger_approve" type="object" string="Acknowledge" attrs="{'invisible': [ '|', ('ami_responsible_ack', '=', False), ('state', '!=', 'waiting_ack')]}"/>
+          <button class="btn btn-primary" name="approver_approve" type="object" string="Approve" attrs="{'invisible': [ '|', ('ami_responsible_approve', '=', False), ('state', '!=', 'waiting_approval')]}"/>
+          <button class="btn btn-primary" name="set_approval_process" type="object" string="Run Approval Process" attrs="{'invisible': [('state', 'not in', ['draft', 'sent'])]}"/>
+          <button class="btn btn-primary" name="remove_approval_process" groups='base.group_no_one' type="object" string="Remove Approval Process"/>
+        </xpath>
+
+        <xpath expr="//field[@name='order_line']/tree/field[@name='account_analytic_id']" position="attributes">
+          <attribute name="optional">show</attribute>
+          <attribute name="required">1</attribute>
+        </xpath>
+      </field>
+    </record>
+  </data>
+</odoo>
